@@ -38,12 +38,13 @@ int main(void)
     y4m_stream_info_t si;
     y4m_frame_info_t fi;
     FILE *input = fopen(INPUT_PATH, "rb");
-    FILE *output = fopen(OUTPUT_PATH, "wb");
     int32_t file_len = 0;
     uint8_t *buffer = NULL;
     uint8_t *rgba = NULL;
     int32_t width;
     int32_t height;
+    int32_t decoded_frames = 0;
+    int ret_value;
 
     fseek(input, 0, SEEK_END);
     file_len = ftell(input);
@@ -64,7 +65,16 @@ int main(void)
     height = y4m_si_get_height(&si);
     rgba = calloc(width * height * 4, sizeof(uint8_t));
 
-    y4m_js_decode_frame(reader, &si, &fi, rgba);
+    while(1) {
+        ret_value = y4m_js_decode_frame(reader, &si, &fi, rgba);
+        if(Y4M_OK != ret_value) {
+            printf("return value: %d\n", ret_value);
+            break;
+        }
+        decoded_frames += 1;
+    }
+
+    printf("decoded %d frames\n", decoded_frames);
 
     y4m_fini_frame_info(&fi);
     y4m_fini_stream_info(&si);
@@ -72,8 +82,6 @@ int main(void)
     free(buffer);
     y4m_js_close_cb_reader(reader);
 
-    fwrite(rgba, sizeof(uint8_t), width * height * 4, output);
-    fclose(output);
     free(rgba);
 
     return 0;
