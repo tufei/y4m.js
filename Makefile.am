@@ -8,6 +8,8 @@
 #        library libmpeg2encpp.  Sigh.  Feel free to do it differently if you
 #        can come up with a better method.
 
+EMCC = emcc
+
 SUBDIRS = \
 	utils \
 	mpeg2enc \
@@ -78,6 +80,37 @@ MAINTAINERCLEANFILES = \
 	configure \
 	ltmain.sh \
 	stamp-h.in
+
+EMCFLAGS = \
+	-Os -Wall -MMD -I. -I./lavtools -I./utils \
+	-fno-asynchronous-unwind-tables -fdata-sections -ffunction-sections \
+	-fno-math-errno -fno-signed-zeros -fno-tree-vectorize -fomit-frame-pointer \
+	-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_REENTRANT
+
+# Emscripten config
+EMLDFLAGS = \
+	-s "EXPORTED_FUNCTIONS=['_y4m_accept_extensions', '_y4m_init_stream_info', '_y4m_init_frame_info', '_y4m_read_stream_header_cb', '_y4m_fini_stream_info', '_y4m_fini_frame_info', '_y4m_js_open_cb_reader', '_y4m_js_close_cb_reader', '_y4m_js_decode_frame', '_malloc','_free']" \
+	-s NO_FILESYSTEM=1 -s NO_BROWSER=1 \
+	-O3 --memory-init-file 0 --closure 1 --post-js post.js
+
+Y4M_JS_OBJECTS = \
+	utils/mjpeg_logging.js.o \
+	utils/mpegconsts.js.o \
+	utils/mpegtimecode.js.o \
+	utils/yuv4mpeg.js.o \
+	utils/yuv4mpeg_ratio.js.o \
+	lavtools/colorspace.js.o \
+	lavtools/subsample.js.o \
+	y4m_js.js.o \
+	tmalloc.js.o
+
+y4m.js: $(Y4M_JS_OBJECTS) post.js
+	$(EMCC) $(EMLDFLAGS) -s TOTAL_MEMORY=33554432 -o $@ $(Y4M_JS_OBJECTS)
+
+SUFFIXES = .js.o
+
+.c.js.o:
+	$(EMCC) $(EMCFLAGS) -c -o $@ $<
 
 ## make rpms
 rpm: Makefile
