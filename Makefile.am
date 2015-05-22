@@ -58,6 +58,8 @@ EXTRA_DIST = \
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = mjpegtools.pc
 
+MOSTLYCLEANFILES = *.js.d *.js.o y4m.js test_js
+
 DISTCLEANFILES = \
 	mjpegtools-config.h \
 	mjpegtools.pc \

@@ -1,5 +1,7 @@
 # Makefile for lavtools
 
+MOSTLYCLEANFILES = *.js.d *.js.o
+
 MAINTAINERCLEANFILES = Makefile.in
 
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/utils $(LIBQUICKTIME_CFLAGS)

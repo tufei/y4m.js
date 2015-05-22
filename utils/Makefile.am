@@ -55,3 +55,6 @@ pkginclude_HEADERS = \
 	yuv4mpeg.h
 
 MAINTAINERCLEANFILES = Makefile.in
+
+MOSTLYCLEANFILES = *.js.d *.js.o
+
